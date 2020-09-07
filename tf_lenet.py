@@ -10,7 +10,6 @@ import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
-import pathlib
 import cv2
 import os
 import numpy as np
@@ -179,53 +178,14 @@ plt.show()
 # model.add(layers.Conv2D(16, (5, 5), activation = 'relu'))
 # model.add(layers.AveragePooling2D())
 
-# epochs 10, acc 0,1493
-
-
-
-# model = models.Sequential()
-# model.add(layers.Conv2D(6, (5, 5), activation = 'relu', input_shape = (32, 32, 3)))
-# model.add(layers.AveragePooling2D((2, 2)))
-
-# model.add(layers.Conv2D(16, (5, 5), activation = 'relu'))
-# model.add(layers.AveragePooling2D((2, 2)))
-
-# sama kun edellä
-
-
-
-# model = models.Sequential()
-# model.add(layers.Conv2D(6, (5, 5), activation = 'relu', input_shape = (32, 32, 3)))
-# model.add(layers.MaxPooling2D((2, 2)))
-
-# model.add(layers.Conv2D(16, (5, 5), activation = 'relu'))
-# model.add(layers.MaxPooling2D((2, 2)))
-
-# epochs 10, acc 0,4179
-
-
-
-# model = models.Sequential()
-# model.add(layers.Conv2D(6, (3, 3), activation = 'relu', input_shape = (32, 32, 3)))
-# model.add(layers.AveragePooling2D())
-
-# model.add(layers.Conv2D(16, (3, 3), activation = 'relu'))
-# model.add(layers.AveragePooling2D())
-
-# ei vaikutusta
-
 
 
 model = models.Sequential()
 model.add(layers.Conv2D(6, (5, 5), activation = 'tanh', input_shape = (32, 32, 3)))
-model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.MaxPooling2D())
 
 model.add(layers.Conv2D(16, (5, 5), activation = 'tanh'))
-model.add(layers.MaxPooling2D((2, 2)))
-
-# epochs 10, acc 0,4478
-# muutos datassa training 210+202+88, testing 60+60+20
-# epochs 10, acc 0,4286
+model.add(layers.MaxPooling2D())
 
 
 
@@ -244,15 +204,15 @@ model.compile(optimizer = 'adam',
               metrics = ['accuracy'])
 
 # treenaus ilman augmentointia
-history = model.fit(train_images, train_labels, epochs = 100, 
+history = model.fit(train_images, train_labels, epochs = 50, 
                     validation_data = (test_images, test_labels))
 
 # # treenaus training datan augmentoinnilla
-# history = model.fit_generator(train_generator, epochs = 10, 
+# history = model.fit_generator(train_generator, epochs = 50, 
 #                     validation_data = (test_images, test_labels))
 
 # # treenaus molempien datojen augmentoinnilla
-# history = model.fit_generator(train_generator, epochs = 10, 
+# history = model.fit_generator(train_generator, epochs = 50, 
 #                     validation_data = vali_generator)
 
 
@@ -265,7 +225,7 @@ plt.ylim([0, 1])
 plt.legend(loc = 'lower right')
 
 test_loss, test_acc = model.evaluate(test_images,  test_labels, verbose = 2)
-
+print(max(history.history['val_acc']))
 
 # %%
 probability_model = tf.keras.Sequential([model, 
