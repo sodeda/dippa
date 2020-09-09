@@ -133,7 +133,7 @@ def validate(valid_loader, model, criterion, device):
     for X, y_true in valid_loader:
     
         X = X.to(device)
-        y_true = y_true.to(device) - 1
+        y_true = y_true.to(device)
 
         # Forward pass and record loss
         y_hat, _ = model(X) 
@@ -194,12 +194,16 @@ class CustomDatasetFromFile(Dataset):
             folder_path (string): path to image folder
         """
         # Get image list
-        self.image_list = glob.glob(folder_paths[0]+'*')+glob.glob(folder_paths[1]+'*')+glob.glob(folder_paths[0]+'*')
+        self.image_list = glob.glob(folder_paths[0]+'*')+glob.glob(folder_paths[1]+'*')+glob.glob(folder_paths[2]+'*')
         # Calculate len
         self.data_len = len(self.image_list)
         self.h = h
         self.w = w
         self.transform = transform
+        self.data = []
+        for img in self.image_list:
+            img = self.transform(Image.open(img))
+            self.data.append(img)
 
     def __getitem__(self, index):
         # Get image name from the pandas df
@@ -233,10 +237,7 @@ class CustomDatasetFromFile(Dataset):
         class_name = class_name.split('/')
         label = class_name[7]
         label = label.split('\\')
-        try:
-            label = int(label[0])        
-        except:
-            label = int(0)
+        label = int(label[0])        
         
         return (im_as_ten, label)
 
@@ -244,30 +245,29 @@ class CustomDatasetFromFile(Dataset):
         return self.data_len
     
     
-    def add_images(self, path):
-        images = glob.glob(path+'*')
-        self.image_list = self.image_list + images
-        self.data_len = len(self.image_list)
+    def data(self):
+        return self.data
 
 
 # %% DATA
 # define transforms
 # transforms.ToTensor() automatically scales the images to [0,1] range
-transforms = transforms.Compose([transforms.Resize((32, 32)), transforms.Grayscale(),
+transforms = transforms.Compose([transforms.Resize((32, 32)), 
                                  transforms.ToTensor()])
 
-paths = ['C:/Users/soder/Desktop/dippakoodit/katodit/training_data/1/',
-         'C:/Users/soder/Desktop/dippakoodit/katodit/training_data/9/',
-         'C:/Users/soder/Desktop/dippakoodit/katodit/training_data/romu/']
+paths = ['C:/Users/soder/Desktop/dippakoodit/katodit/training_data/0/',
+         'C:/Users/soder/Desktop/dippakoodit/katodit/training_data/1/',
+         'C:/Users/soder/Desktop/dippakoodit/katodit/training_data/2/']
+
+paths2 = ['C:/Users/soder/Desktop/dippakoodit/katodit/test_data/0/',
+         'C:/Users/soder/Desktop/dippakoodit/katodit/test_data/1/',
+         'C:/Users/soder/Desktop/dippakoodit/katodit/test_data/2/']
 
 # download and create datasets
 train_dataset = CustomDatasetFromFile(paths, 32, 32, transforms)
 
-valid_dataset = CustomDatasetFromFile('C:/Users/soder/Desktop/dippakoodit/katodit/test_data/1/', 32, 32, transforms)
-valid_dataset.add_images('C:/Users/soder/Desktop/dippakoodit/katodit/test_data/9/')
-valid_dataset.add_images('C:/Users/soder/Desktop/dippakoodit/katodit/test_data/romu/')
+valid_dataset = CustomDatasetFromFile(paths2, 32, 32, transforms)
 
-valid_dataset = train_dataset
 # define the data loaders
 train_loader = DataLoader(dataset=train_dataset, 
                           batch_size=BATCH_SIZE, 
@@ -278,23 +278,23 @@ valid_loader = DataLoader(dataset=valid_dataset,
                           shuffle=False)
 
 #
-dataiter = iter(train_loader)
-images, labels = dataiter.next()
+# dataiter = iter(train_loader)
+# images, labels = dataiter.next()
 
 # print(images.shape)
 # print(labels.shape)
 
 # %% PLOTS
-# ROW_IMG = 10
-# N_ROWS = 5
+ROW_IMG = 5
+N_ROWS = 5
 
-# # värillisenä
-# fig = plt.figure()
-# for index in range(1, ROW_IMG * N_ROWS + 1):
-#     plt.subplot(N_ROWS, ROW_IMG, index)
-#     plt.axis('off')
-#     plt.imshow(train_dataset.data[index])
-# fig.suptitle('MNIST Dataset - preview');
+# värillisenä
+fig = plt.figure()
+for index in range(1, ROW_IMG * N_ROWS + 1):
+    plt.subplot(N_ROWS, ROW_IMG, index)
+    plt.axis('off')
+    plt.imshow(train_dataset.data[index].permute(1,2,0))
+fig.suptitle('MNIST Dataset - preview');
 
 # # harmaana
 # fig = plt.figure()
@@ -303,7 +303,6 @@ images, labels = dataiter.next()
 #     plt.axis('off')
 #     plt.imshow(train_dataset.data[index], cmap='gray_r')
 # fig.suptitle('MNIST Dataset - preview');
-
 
 # %% LeNet-5
 class LeNet5(nn.Module):
@@ -364,3 +363,17 @@ for index in range(1, ROW_IMG * N_ROWS + 1):
     
     plt.title(title, fontsize=7)
 fig.suptitle('LeNet-5 - predictions');
+
+examples = enumerate(valid_loader)
+batch_idx, (example_data, example_targets) = next(examples)
+example_data.shape
+
+fig = plt.figure()
+for i in range(5):
+  plt.subplot(2,3,i+1)
+  plt.tight_layout()
+  plt.imshow(example_data[i][0], cmap='gray', interpolation='none')
+  plt.title("Ground Truth: {}".format(example_targets[i]))
+  plt.xticks([])
+  plt.yticks([])
+fig
