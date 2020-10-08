@@ -5,6 +5,8 @@ CNN katodien lajitteluun
 
 - haetaan data  ja liitetään niihin oikean luokan label (saadaan kansiosta)
 - muodostetaan train_images ja train_labels, test_images ja test_labels
-- tehdään halutut augmentoinnit (horizontal_flip, vertical_flip)
+    - voidaan laajentaa dataa augmentoimalla ladatessa
+- tehdään halutut augmentoinnit treeni ja testidataan (horizontal_flip, vertical_flip)
 - muodostetaan haluttu CNN malli
 - treenaus (ilman augmentointia, training datan augmentoinnilla tai molempien datojen augmentoinnilla)
+- transfer learning ja fine-tuning
