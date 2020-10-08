@@ -18,9 +18,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def pre_process(paths, class_names, size):
     img_and_lab = []
-    img_and_lab = get_data(img_and_lab, paths[0], '1', size)
-    img_and_lab = get_data(img_and_lab, paths[1], '9', size)
-    img_and_lab = get_data(img_and_lab, paths[2], 'romu', size)
+    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size)
+    img_and_lab = get_data(img_and_lab, paths[1], class_names[1], size)
+    img_and_lab = get_data(img_and_lab, paths[2], class_names[2], size)
     
     # shuffle data
     random.shuffle(img_and_lab)
@@ -34,20 +34,85 @@ def pre_process(paths, class_names, size):
     labels = np.array(labels)
     
     return images, labels
-    
 
-# gets data from path, resizes images and add labels to them
+
+def pre_process2(paths, class_names, size):
+    img_and_lab = []
+    img_and_lab2 = []
+    img_and_lab3 = []
+    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size)
+    img_and_lab2 = get_data(img_and_lab2, paths[1], class_names[1], size)
+    img_and_lab3 = get_data(img_and_lab3, paths[2], class_names[2], size)
+    
+    # shuffle data
+    random.shuffle(img_and_lab)
+    random.shuffle(img_and_lab2)
+    random.shuffle(img_and_lab3)
+    
+    # separate to training and testing data
+    tr0 = img_and_lab[120:]
+    tr1 = img_and_lab2[120:]
+    tr2 = img_and_lab3[40:]
+    te0 = img_and_lab[:120]
+    te1 = img_and_lab2[:120]
+    te2 = img_and_lab3[:40]
+    tr = tr0+tr1+tr2
+    te = te0+te1+te2
+    
+    # separate images and labels and change labels to binary
+    trimages, trlabels = separate_img_and_lab(tr)
+    trlabels = labels_to_int(trlabels)
+    teimages, telabels = separate_img_and_lab(te)
+    telabels = labels_to_int(telabels)
+    
+    # change lists to arrays
+    trimages = np.array(trimages)
+    trlabels = np.array(trlabels)
+    teimages = np.array(teimages)
+    telabels = np.array(telabels)
+        
+    return trimages, teimages, trlabels, telabels
+ 
+
+# gets data from path, resizes images and adds labels to them
 def get_data(data, path, label, size):
-    lbl = label
     for image in os.listdir(path):
         img = cv2.imread(path + '/' + image, 1) # 0 gray, 1 rgb
         img = cv2.resize(img, (size, size))
+        img2 = augment(img)
         img_and_label = []
+        img_and_label2 = []
         img_and_label.append(img)
-        img_and_label.append(lbl)
+        img_and_label.append(label)
         data.append(img_and_label)
+        img_and_label2.append(img2)
+        img_and_label2.append(label)
+        data.append(img_and_label2)
     
     return data
+
+
+def augment(img):
+    N = random.randint(1, 3)
+    M = random.randint(1, 3)
+
+    if N == 1:
+        img = cv2.flip(img, 0)
+    elif N == 2:
+        img = cv2.flip(img, 1)
+    else:
+        img = cv2.flip(img, -1)
+        
+    if M == 1:
+        hsvImg = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        hsvImg[...,2] = hsvImg[...,2]*1.1
+        img = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
+    elif M == 2:
+        hsvImg = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+        hsvImg[...,2] = hsvImg[...,2]*0.8
+        img = cv2.cvtColor(hsvImg, cv2.COLOR_HSV2BGR)
+   
+    return img
 
 
 # separate images and labels to different arrays
@@ -67,9 +132,9 @@ def labels_to_int(labels):
     integer = []
     i = 0
     for elements in labels:
-        if labels[i] == '1':
+        if labels[i] == 'std':
             integer.append(1)
-        elif labels[i] == '9':
+        elif labels[i] == 'priima':
             integer.append(0)
         else:
             integer.append(2)
@@ -78,8 +143,13 @@ def labels_to_int(labels):
 
 
 def augmentation(images, labels, vert, hori, batch):
-    generator = ImageDataGenerator(vertical_flip = vert, horizontal_flip = hori)
-    generator = generator.flow(images, labels, batch)
+    # brightness_range = [0.75, 1.0], zoom_range = [0.9, 1.0], 
+    # height_shift_range = [-1, 1], width_shift_range = [-1, 1]
+    generator = ImageDataGenerator(vertical_flip = vert, 
+                                   horizontal_flip = hori,
+                                   brightness_range = [0.75, 1.0], 
+                                   zoom_range = [0.9, 1.0])
+    generator = generator.flow(images, labels, batch_size = batch)
     
     return generator
 
@@ -97,8 +167,8 @@ def plot_images(images, labels, class_names):
             plt.imshow(images[i], cmap = plt.cm.binary)
             label = class_names[labels[i]]
         except:
-            plt.imshow(images[i][0][0].astype('uint8'), cmap = plt.cm.binary)
-            label = class_names[images[i][1][0]]
+            plt.imshow(images[0][0][i].astype('uint8'), cmap = plt.cm.binary)
+            label = class_names[images[0][1][i]]
                 
         plt.xlabel(label)
     plt.show()
@@ -150,7 +220,6 @@ def evaluate_and_plot(history, model, images, labels, classes):
     
     print('best accuracy', max(history.history['val_acc']))
     
-    # %%
     probability_model = tf.keras.Sequential([model, 
                                              tf.keras.layers.Softmax()])
     predictions = probability_model.predict(images)  
@@ -164,9 +233,9 @@ def evaluate_and_plot(history, model, images, labels, classes):
     plot_value_array(i, predictions[i], labels, classes)
     plt.show()
     
-    # Plot the first 15 test images, predicted labels and true labels
+    # Plot the first  test images, predicted labels and true labels
     # Correct predictions in blue and incorrect predictions in red
-    num_rows = 5
+    num_rows = 3
     num_cols = 3
     num_images = num_rows*num_cols
     plt.figure(figsize=(2*2*num_cols, 2*num_rows))

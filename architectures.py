@@ -5,19 +5,23 @@ Created on Thu Sep 17 14:27:54 2020
 @author: soderdahl
 """
 
-from tensorflow.keras import datasets, layers, models
+from tensorflow.keras import datasets, layers, models, applications, Input, Model
 
 
 def LeNet():
     model = models.Sequential()
     model.add(layers.Conv2D(6, (5, 5), strides=(1,1), activation = 'tanh', input_shape = (32, 32, 3)))
     model.add(layers.AveragePooling2D((2,2), strides=(2,2)))
+    #model.add(layers.MaxPooling2D((2,2), strides=(2,2)))
     model.add(layers.Conv2D(16, (5, 5), strides=(1,1), activation = 'tanh'))
     model.add(layers.AveragePooling2D((2,2), strides=(2,2)))
+    #model.add(layers.MaxPooling2D((2,2), strides=(2,2)))
     
     model.add(layers.Flatten())
     model.add(layers.Dense(120, activation = 'tanh'))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(84, activation = 'tanh'))
+    model.add(layers.Dropout(0.5))
     model.add(layers.Dense(3, activation = 'softmax'))
     
     model.output_shape
@@ -48,5 +52,11 @@ def AlexNet():
     
     model.output_shape
     model.summary()
+    
+    return model
+
+
+def CustomNet():
+    model = models.Sequential()
     
     return model
