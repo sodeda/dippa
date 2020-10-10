@@ -9,6 +9,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import random
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -16,6 +17,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # %% Functions
 
+# If data is not expanded
 def pre_process(paths, class_names, size):
     img_and_lab = []
     img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size)
@@ -36,6 +38,7 @@ def pre_process(paths, class_names, size):
     return images, labels
 
 
+# If data is expanded
 def pre_process2(paths, class_names, size):
     img_and_lab = []
     img_and_lab2 = []
@@ -74,7 +77,7 @@ def pre_process2(paths, class_names, size):
     return trimages, teimages, trlabels, telabels
  
 
-# gets data from path, resizes images and adds labels to them
+# Gets data from path, resizes images and adds labels to them
 def get_data(data, path, label, size):
     for image in os.listdir(path):
         img = cv2.imread(path + '/' + image, 1) # 0 gray, 1 rgb
@@ -115,7 +118,7 @@ def augment(img):
     return img
 
 
-# separate images and labels to different arrays
+# Separate images and labels to different arrays
 def separate_img_and_lab(list):
     img = []
     label = []
@@ -127,7 +130,7 @@ def separate_img_and_lab(list):
     return img, label
 
 
-# change labels to integer values
+# Change labels to integer values
 def labels_to_int(labels):
     integer = []
     i = 0
@@ -147,8 +150,7 @@ def augmentation(images, labels, vert, hori, batch):
     # height_shift_range = [-1, 1], width_shift_range = [-1, 1]
     generator = ImageDataGenerator(vertical_flip = vert, 
                                    horizontal_flip = hori,
-                                   brightness_range = [0.75, 1.0], 
-                                   zoom_range = [0.9, 1.0])
+                                   brightness_range = [0.75, 1.0])
     generator = generator.flow(images, labels, batch_size = batch)
     
     return generator
@@ -174,7 +176,7 @@ def plot_images(images, labels, class_names):
     plt.show()
 
 
-# plots image and label that says what is predicted and its %, and what is correct label
+# Plots image and label that says what is predicted and its %, and what is correct label
 def plot_image(i, predictions_array, true_label, img, class_names):
       true_label, img = true_label[i], img[i]
       plt.grid(False)
@@ -195,7 +197,7 @@ def plot_image(i, predictions_array, true_label, img, class_names):
                                      color=color)
 
 
-# plots bar graph of predictions
+# Plots bar graph of predictions
 def plot_value_array(i, predictions_array, true_label, class_names):
       true_label = true_label[i]
       plt.grid(False)
@@ -211,12 +213,37 @@ def plot_value_array(i, predictions_array, true_label, class_names):
       
      
 def evaluate_and_plot(history, model, images, labels, classes):
-    plt.plot(history.history['acc'], label = 'accuracy')
-    plt.plot(history.history['val_acc'], label = 'validation_accuracy')
+    csv = pd.read_csv('test')
+    plt.plot(csv['acc'], label = 'accuracy')
+    plt.plot(csv['val_acc'], label = 'validation_accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.ylim([0, 1])
     plt.legend(loc = 'lower right')
+    
+    plt.figure()
+    csv = pd.read_csv('test')
+    plt.plot(csv['loss'], label = 'loss')
+    plt.plot(csv['val_loss'], label = 'validation_loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.ylim([0, 1.5])
+    plt.legend(loc = 'lower right')
+    
+    # plt.plot(history.history['acc'], label = 'accuracy')
+    # plt.plot(history.history['val_acc'], label = 'validation_accuracy')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Accuracy')
+    # plt.ylim([0, 1])
+    # plt.legend(loc = 'lower right')
+    
+    # plt.figure()
+    # plt.plot(history.history['loss'], label = 'training_loss')
+    # plt.plot(history.history['val_loss'], label = 'validation_loss')
+    # plt.xlabel('Epoch')
+    # plt.ylabel('Loss')
+    # plt.ylim([0, 1.5])
+    # plt.legend(loc = 'lower right')
     
     print('best accuracy', max(history.history['val_acc']))
     

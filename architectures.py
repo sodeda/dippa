@@ -57,6 +57,23 @@ def AlexNet():
 
 
 def CustomNet():
+    # Conv2D(filters, kernel_size, activation, input)
+
     model = models.Sequential()
+    model.add(layers.Conv2D(16, (3, 3), activation = 'tanh', input_shape = (32, 32, 3)))
+    model.add(layers.Conv2D(16, (3, 3), activation = 'tanh'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.1))
+    
+    model.add(layers.Conv2D(16, (3, 3), activation = 'tanh'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Conv2D(16, (3, 3), activation = 'tanh'))
+    model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Dropout(0.1))
+    
+    model.add(layers.Flatten())
+    model.add(layers.Dense(100, activation = 'tanh'))
+    model.add(layers.Dropout(0.25))
+    model.add(layers.Dense(3, activation = 'softmax'))
     
     return model
