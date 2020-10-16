@@ -19,10 +19,11 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # If data is not expanded
 def pre_process(paths, class_names, size):
+    # gets data from every path
     img_and_lab = []
-    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size)
-    img_and_lab = get_data(img_and_lab, paths[1], class_names[1], size)
-    img_and_lab = get_data(img_and_lab, paths[2], class_names[2], size)
+    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size, exp=False)
+    img_and_lab = get_data(img_and_lab, paths[1], class_names[1], size, exp=False)
+    img_and_lab = get_data(img_and_lab, paths[2], class_names[2], size, exp=False)
     
     # shuffle data
     random.shuffle(img_and_lab)
@@ -40,25 +41,25 @@ def pre_process(paths, class_names, size):
 
 # If data is expanded
 def pre_process2(paths, class_names, size):
-    img_and_lab = []
-    img_and_lab2 = []
-    img_and_lab3 = []
-    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size)
-    img_and_lab2 = get_data(img_and_lab2, paths[1], class_names[1], size)
-    img_and_lab3 = get_data(img_and_lab3, paths[2], class_names[2], size)
+    # gets data from every path to different lists
+    img_and_lab = [], img_and_lab2 = [], img_and_lab3 = []
+    img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size, exp=True)
+    img_and_lab2 = get_data(img_and_lab2, paths[1], class_names[1], size, exp=True)
+    img_and_lab3 = get_data(img_and_lab3, paths[2], class_names[2], size, exp=True)
     
-    # shuffle data
+    # shuffle all lists
     random.shuffle(img_and_lab)
     random.shuffle(img_and_lab2)
     random.shuffle(img_and_lab3)
     
-    # separate to training and testing data
+    # separate lists to training and testing data
     tr0 = img_and_lab[120:]
     tr1 = img_and_lab2[120:]
     tr2 = img_and_lab3[40:]
     te0 = img_and_lab[:120]
     te1 = img_and_lab2[:120]
     te2 = img_and_lab3[:40]
+    # combine training and test data lists
     tr = tr0+tr1+tr2
     te = te0+te1+te2
     
@@ -78,19 +79,22 @@ def pre_process2(paths, class_names, size):
  
 
 # Gets data from path, resizes images and adds labels to them
-def get_data(data, path, label, size):
+def get_data(data, path, label, size, exp):
     for image in os.listdir(path):
         img = cv2.imread(path + '/' + image, 1) # 0 gray, 1 rgb
         img = cv2.resize(img, (size, size))
-        img2 = augment(img)
         img_and_label = []
-        img_and_label2 = []
         img_and_label.append(img)
         img_and_label.append(label)
         data.append(img_and_label)
-        img_and_label2.append(img2)
-        img_and_label2.append(label)
-        data.append(img_and_label2)
+
+        # img2 used when data is expanded
+        if exp == True:
+            img2 = augment(img)
+            img_and_label2 = []
+            img_and_label2.append(img2)
+            img_and_label2.append(label)
+            data.append(img_and_label2)
     
     return data
 
@@ -99,13 +103,15 @@ def augment(img):
     N = random.randint(1, 3)
     M = random.randint(1, 3)
 
+    # choose flip based on randomized number
     if N == 1:
         img = cv2.flip(img, 0)
     elif N == 2:
         img = cv2.flip(img, 1)
     else:
         img = cv2.flip(img, -1)
-        
+       
+    # choose brightness based on randomized number    
     if M == 1:
         hsvImg = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
         hsvImg[...,2] = hsvImg[...,2]*1.1
@@ -156,8 +162,8 @@ def augmentation(images, labels, vert, hori, batch):
     return generator
 
 
+# Plots 9 first images in training data with labels
 def plot_images(images, labels, class_names):
-    # Plot 9 first images in training data with labels
     plt.figure(figsize = (10,10))
     for i in range(9):
         plt.subplot(3,3,i+1)
@@ -211,8 +217,10 @@ def plot_value_array(i, predictions_array, true_label, class_names):
       thisplot[predicted_label].set_color('red')
       thisplot[true_label].set_color('blue')
       
-     
+
+# Plots training accuracies, losses and images with predicted and correct labels     
 def evaluate_and_plot(history, model, images, labels, classes):
+    # plots training accuracies
     csv = pd.read_csv('test')
     plt.plot(csv['acc'], label = 'accuracy')
     plt.plot(csv['val_acc'], label = 'validation_accuracy')
@@ -221,6 +229,7 @@ def evaluate_and_plot(history, model, images, labels, classes):
     plt.ylim([0, 1])
     plt.legend(loc = 'lower right')
     
+    # plots training losses
     plt.figure()
     csv = pd.read_csv('test')
     plt.plot(csv['loss'], label = 'loss')
@@ -230,38 +239,14 @@ def evaluate_and_plot(history, model, images, labels, classes):
     plt.ylim([0, 1.5])
     plt.legend(loc = 'lower right')
     
-    # plt.plot(history.history['acc'], label = 'accuracy')
-    # plt.plot(history.history['val_acc'], label = 'validation_accuracy')
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Accuracy')
-    # plt.ylim([0, 1])
-    # plt.legend(loc = 'lower right')
-    
-    # plt.figure()
-    # plt.plot(history.history['loss'], label = 'training_loss')
-    # plt.plot(history.history['val_loss'], label = 'validation_loss')
-    # plt.xlabel('Epoch')
-    # plt.ylabel('Loss')
-    # plt.ylim([0, 1.5])
-    # plt.legend(loc = 'lower right')
-    
     print('best accuracy', max(history.history['val_acc']))
     
     probability_model = tf.keras.Sequential([model, 
                                              tf.keras.layers.Softmax()])
     predictions = probability_model.predict(images)  
     
-    # Plots first image, predicted label and true label
-    i = 0
-    plt.figure(figsize=(6,3))
-    plt.subplot(1,2,1)
-    plot_image(i, predictions[i], labels, images, classes)
-    plt.subplot(1,2,2)
-    plot_value_array(i, predictions[i], labels, classes)
-    plt.show()
-    
-    # Plot the first  test images, predicted labels and true labels
-    # Correct predictions in blue and incorrect predictions in red
+    # plot the first  test images, predicted labels and true labels
+    # correct predictions in blue and incorrect predictions in red
     num_rows = 3
     num_cols = 3
     num_images = num_rows*num_cols

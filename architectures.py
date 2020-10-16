@@ -12,10 +12,8 @@ def LeNet():
     model = models.Sequential()
     model.add(layers.Conv2D(6, (5, 5), strides=(1,1), activation = 'tanh', input_shape = (32, 32, 3)))
     model.add(layers.AveragePooling2D((2,2), strides=(2,2)))
-    #model.add(layers.MaxPooling2D((2,2), strides=(2,2)))
     model.add(layers.Conv2D(16, (5, 5), strides=(1,1), activation = 'tanh'))
     model.add(layers.AveragePooling2D((2,2), strides=(2,2)))
-    #model.add(layers.MaxPooling2D((2,2), strides=(2,2)))
     
     model.add(layers.Flatten())
     model.add(layers.Dense(120, activation = 'tanh'))
@@ -57,8 +55,6 @@ def AlexNet():
 
 
 def CustomNet():
-    # Conv2D(filters, kernel_size, activation, input)
-
     model = models.Sequential()
     model.add(layers.Conv2D(16, (3, 3), activation = 'tanh', input_shape = (32, 32, 3)))
     model.add(layers.Conv2D(16, (3, 3), activation = 'tanh'))
