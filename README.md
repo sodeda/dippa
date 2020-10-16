@@ -1,4 +1,5 @@
 DIPLOMITYÖ KONENÄÖN AVULLA TEHTYYN LAJITTELUUN
+
 Sisältää moduulit:
 - main.py
 - functions.py
