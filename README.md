@@ -1,12 +1,16 @@
-CNN katodien lajitteluun
+DIPLOMITYÖ KONENÄÖN AVULLA TEHTYYN LAJITTELUUN
+Sisältää moduulit:
+- main.py
+- functions.py
+- architectures.py
 
-- polut katodikuvien kansioihin
-  - jokainen luokka jaettu omiin training ja test kansioihin
-
-- haetaan data  ja liitetään niihin oikean luokan label (saadaan kansiosta)
-- muodostetaan train_images ja train_labels, test_images ja test_labels
-    - voidaan laajentaa dataa augmentoimalla ladatessa
-- tehdään halutut augmentoinnit treeni ja testidataan (horizontal_flip, vertical_flip)
-- muodostetaan haluttu CNN malli
-- treenaus (ilman augmentointia, training datan augmentoinnilla tai molempien datojen augmentoinnilla)
-- transfer learning ja fine-tuning
+main.py rakenne:
+1. Annettu polut kuviin ja asetettu parametreja
+2. Kuvat on luettu ja data on laajennettu augmentoimalla
+3. Opetus ja testidataa on mahdollista augmentoida uudelleen
+4. Piirretty ensimmäisiä kuvia datasta
+5. Valittu haluttu CNN malli
+6. Transfer learning, jos käytetty
+7. Opetus 3 eri tavalla
+8. Fine-tuning, jos käytetty
+9. Piirretty kuvaajia
