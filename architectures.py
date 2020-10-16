@@ -5,7 +5,7 @@ Created on Thu Sep 17 14:27:54 2020
 @author: soderdahl
 """
 
-from tensorflow.keras import datasets, layers, models, applications, Input, Model
+from tensorflow.keras import layers, models
 
 
 def LeNet():

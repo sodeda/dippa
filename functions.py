@@ -42,7 +42,9 @@ def pre_process(paths, class_names, size):
 # If data is expanded
 def pre_process2(paths, class_names, size):
     # gets data from every path to different lists
-    img_and_lab = [], img_and_lab2 = [], img_and_lab3 = []
+    img_and_lab = []
+    img_and_lab2 = []
+    img_and_lab3 = []
     img_and_lab = get_data(img_and_lab, paths[0], class_names[0], size, exp=True)
     img_and_lab2 = get_data(img_and_lab2, paths[1], class_names[1], size, exp=True)
     img_and_lab3 = get_data(img_and_lab3, paths[2], class_names[2], size, exp=True)

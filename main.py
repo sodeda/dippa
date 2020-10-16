@@ -90,7 +90,7 @@ model.compile(optimizer = Adam(),
               metrics = ['accuracy'])
 
 # makes results file when training
-CSV = tf.keras.callbacks.CSVLogger('test2', append=True)
+CSV = tf.keras.callbacks.CSVLogger('test', append=True)
 
 # Training without augmentations
 # history = model.fit(train_images, train_labels, batch_size = BATCH, epochs = EPOCHS, 
